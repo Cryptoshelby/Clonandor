@@ -1,8 +1,10 @@
-from telethon import TelegramClient, events
+from telethon import TelegramClient, sync, events
 from telethon.sessions import StringSession
 import requests
 import threading
 from http.server import HTTPServer, BaseHTTPRequestHandler
+from datetime import datetime, timedelta
+import time
 
 API_ID = 27878760
 API_HASH = 'b2cd626ab971e67c583c850d6274c39c'
@@ -23,24 +25,36 @@ def run_server():
 threading.Thread(target=run_server, daemon=True).start()
 print('🌐 Servidor HTTP iniciado')
 
-# Cliente de Telegram
 client = TelegramClient(StringSession(STRING_SESSION), API_ID, API_HASH)
+client.start()
+print('🤖 Clonador híbrido iniciado')
 
+# Clonar historial de 2 días al iniciar
+hace2dias = datetime.now() - timedelta(days=2)
+for canal in CANALES_FUENTE:
+    try:
+        messages = client.get_messages(canal, limit=5)
+        for msg in messages:
+            if msg.date.replace(tzinfo=None) > hace2dias:
+                url = f'https://api.telegram.org/bot{BOT_TOKEN}/copyMessage'
+                data = {'chat_id': CANAL_DESTINO, 'from_chat_id': canal, 'message_id': msg.id}
+                r = requests.post(url, data=data)
+                if r.status_code == 200:
+                    print(f'📋 Historial clonado de {canal}')
+                break
+    except:
+        pass
+
+# Escuchar nuevos mensajes
 @client.on(events.NewMessage(chats=CANALES_FUENTE))
 async def clonar(event):
     try:
         url = f'https://api.telegram.org/bot{BOT_TOKEN}/copyMessage'
-        data = {
-            'chat_id': CANAL_DESTINO,
-            'from_chat_id': event.chat_id,
-            'message_id': event.message.id
-        }
+        data = {'chat_id': CANAL_DESTINO, 'from_chat_id': event.chat_id, 'message_id': event.message.id}
         requests.post(url, data=data)
         print(f'📋 Clonado de {event.chat.username}')
     except Exception as e:
         print(f'Error: {e}')
 
-print('🤖 Iniciando cliente de Telegram...')
-client.start()
-print('✅ Clonador híbrido iniciado')
+print('✅ Modo escucha activado')
 client.run_until_disconnected()
