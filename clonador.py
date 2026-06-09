@@ -1,4 +1,3 @@
-import asyncio
 from telethon import TelegramClient, events
 from telethon.sessions import StringSession
 import requests
@@ -24,28 +23,24 @@ def run_server():
 threading.Thread(target=run_server, daemon=True).start()
 print('🌐 Servidor HTTP iniciado')
 
-async def main():
+# Cliente de Telegram
+client = TelegramClient(StringSession(STRING_SESSION), API_ID, API_HASH)
+
+@client.on(events.NewMessage(chats=CANALES_FUENTE))
+async def clonar(event):
     try:
-        client = TelegramClient(StringSession(STRING_SESSION), API_ID, API_HASH)
-        await client.start()
-        print('🤖 Clonador híbrido iniciado')
-        
-        @client.on(events.NewMessage(chats=CANALES_FUENTE))
-        async def clonar(event):
-            try:
-                url = f'https://api.telegram.org/bot{BOT_TOKEN}/copyMessage'
-                data = {
-                    'chat_id': CANAL_DESTINO,
-                    'from_chat_id': event.chat_id,
-                    'message_id': event.message.id
-                }
-                requests.post(url, data=data)
-                print(f'📋 Clonado de {event.chat.username}')
-            except Exception as e:
-                print(f'Error: {e}')
-        
-        await client.run_until_disconnected()
+        url = f'https://api.telegram.org/bot{BOT_TOKEN}/copyMessage'
+        data = {
+            'chat_id': CANAL_DESTINO,
+            'from_chat_id': event.chat_id,
+            'message_id': event.message.id
+        }
+        requests.post(url, data=data)
+        print(f'📋 Clonado de {event.chat.username}')
     except Exception as e:
         print(f'Error: {e}')
 
-asyncio.run(main())
+print('🤖 Iniciando cliente de Telegram...')
+client.start()
+print('✅ Clonador híbrido iniciado')
+client.run_until_disconnected()
