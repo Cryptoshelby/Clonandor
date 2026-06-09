@@ -8,7 +8,7 @@ API_ID = 27878760
 API_HASH = 'b2cd626ab971e67c583c850d6274c39c'
 STRING_SESSION = '1AZWarzwBu51rRN04oYrh1Mf14yHrJZEhFnYA7rZpEH0cD7v9Thav5j9fv7Ufip70zKYzhd_pLAnOQX_S5XlQm-PGzM3TmHrgclJ7zVFNPAxN9rAYvMH1Ivmv5WGxuRgfxNT_ypuIZFlhTbt3hJ1CBJMuon6UX2PZgPuzbeJjLagJb5z0t2W-zmEBI1bvlQomGFO02SRJ6_f7kM8bSLu8mOf-XVovMq6P0fjeK7fIxFJjyVXN2WTCwligEmm835H2ylev1oHYDlzCzHSx67prgNeZhUFqgOoNGf2aYAiKW0QLuQ8faMHUg5ItxdMKEuBqq4HSLktR-z-qLq6YetKqooomZWby-M8='
 CANAL_DESTINO = '@PaperplaneFeed'
-CANALES_FUENTE = ['@toncoin', '@tonkeeper_news', '@trendingapps', '@durov']
+CANALES_FUENTE = ['@toncoin', '@tonkeeper_news', '@trendingapps', '@durov', '@cryptowallet_news_en']
 
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
