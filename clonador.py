@@ -2,6 +2,7 @@ from telethon import TelegramClient, sync, events
 from telethon.sessions import StringSession
 import threading
 from http.server import HTTPServer, BaseHTTPRequestHandler
+from datetime import datetime, timedelta
 
 API_ID = 27878760
 API_HASH = 'b2cd626ab971e67c583c850d6274c39c'
@@ -10,13 +11,8 @@ CANAL_DESTINO = '@PaperplaneFeed'
 CANALES_FUENTE = ['@toncoin', '@tonkeeper_news', '@trendingapps', '@durov', '@cryptowallet_news_en']
 
 class Handler(BaseHTTPRequestHandler):
-    def do_HEAD(self):
-        self.send_response(200)
-        self.end_headers()
-    def do_GET(self):
-        self.send_response(200)
-        self.end_headers()
-        self.wfile.write(b'OK')
+    def do_HEAD(self): self.send_response(200); self.end_headers()
+    def do_GET(self): self.send_response(200); self.end_headers(); self.wfile.write(b'OK')
 
 threading.Thread(target=HTTPServer(('0.0.0.0', 3000), Handler).serve_forever, daemon=True).start()
 print('🌐 Servidor HTTP iniciado')
@@ -25,10 +21,25 @@ client = TelegramClient(StringSession(STRING_SESSION), API_ID, API_HASH)
 client.start()
 print('🤖 Clonador iniciado')
 
+# Buscar historial de 2 días
+print('🔍 Buscando historial...')
+hace2dias = datetime.now() - timedelta(days=2)
+for canal in CANALES_FUENTE:
+    try:
+        msgs = client.get_messages(canal, limit=10)
+        for msg in msgs:
+            if msg.date.replace(tzinfo=None) > hace2dias:
+                client.send_message(CANAL_DESTINO, message=msg)
+                print(f'📋 Historial: {canal}')
+                break
+    except Exception as e:
+        print(f'Error {canal}: {e}')
+print('✅ Historial procesado')
+
 @client.on(events.NewMessage(chats=CANALES_FUENTE))
 async def clonar(event):
     await client.send_message(CANAL_DESTINO, message=event.message)
     print(f'📋 Clonado de {event.chat.username}')
 
+print('✅ Modo escucha activado')
 client.run_until_disconnected()
-# refresh
